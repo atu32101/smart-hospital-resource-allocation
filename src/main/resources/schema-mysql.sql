@@ -1,0 +1,50 @@
+-- Smart Hospital Resource Allocation System
+-- Database Schema for MySQL
+
+CREATE DATABASE IF NOT EXISTS hospital_db;
+USE hospital_db;
+
+-- 1. Users Table
+CREATE TABLE IF NOT EXISTS users (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(100) NOT NULL,
+    role VARCHAR(20) NOT NULL DEFAULT 'ROLE_ADMIN'
+);
+
+-- 2. Patients Table
+CREATE TABLE IF NOT EXISTS patients (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    age INT NOT NULL,
+    gender VARCHAR(10) NOT NULL,
+    phone VARCHAR(20),
+    symptoms VARCHAR(255),
+    priority VARCHAR(20) NOT NULL, -- CRITICAL, HIGH, MEDIUM, LOW
+    required_bed_type VARCHAR(20) NOT NULL, -- GENERAL, PRIVATE, ICU
+    admission_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(20) NOT NULL DEFAULT 'WAITING' -- WAITING, ADMITTED, DISCHARGED
+);
+
+-- 3. Beds Table
+CREATE TABLE IF NOT EXISTS beds (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    bed_number VARCHAR(50) NOT NULL UNIQUE,
+    bed_type VARCHAR(20) NOT NULL, -- GENERAL, PRIVATE, ICU
+    floor INT NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'AVAILABLE', -- AVAILABLE, OCCUPIED
+    patient_id BIGINT NULL,
+    CONSTRAINT fk_bed_patient FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE SET NULL
+);
+
+-- 4. Allocations Table
+CREATE TABLE IF NOT EXISTS allocations (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    patient_id BIGINT NOT NULL,
+    bed_id BIGINT NOT NULL,
+    allocation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    priority VARCHAR(20) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE', -- ACTIVE, COMPLETED
+    CONSTRAINT fk_alloc_patient FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE,
+    CONSTRAINT fk_alloc_bed FOREIGN KEY (bed_id) REFERENCES beds(id) ON DELETE CASCADE
+);
