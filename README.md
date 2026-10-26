@@ -221,10 +221,11 @@ If you wish to run the project connected directly to your local MySQL instance:
 | Role | Username | Password |
 |---|---|---|
 | **Administrator** | `admin` | `admin123` |
+| **Hospital Staff** | `staff` | `staff123` |
 
 ### Preloaded Demonstration Data
 Upon startup, `DataInitializer` automatically inserts sample demonstration records:
-- **1 Admin user:** `admin` / `admin123`
+- **2 Demo Accounts:** Admin (`admin` / `admin123`) & Staff (`staff` / `staff123`)
 - **15 Beds:**
   - 5 General Beds (`B-101` to `B-105` on Floor 1)
   - 5 Private Beds (`P-201` to `P-205` on Floor 2)

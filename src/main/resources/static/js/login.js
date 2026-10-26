@@ -53,3 +53,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+function fillCredentials(username, password) {
+    const userField = document.getElementById('username');
+    const passField = document.getElementById('password');
+    if (userField) userField.value = username;
+    if (passField) passField.value = password;
+}
+

@@ -44,10 +44,20 @@
                     </div>
                 </form>
 
-                <div class="mt-4 p-3 bg-light rounded text-center small border">
-                    <span class="text-muted">Demo Credentials:</span><br>
-                    <strong>Username:</strong> <code>admin</code> &nbsp;|&nbsp; 
-                    <strong>Password:</strong> <code>admin123</code>
+                <div class="mt-4 p-3 bg-light rounded small border">
+                    <div class="fw-bold text-muted mb-2 text-center text-uppercase" style="font-size: 0.75rem;">Select Demo Account to Autofill:</div>
+                    <div class="d-flex gap-2 mb-2">
+                        <button type="button" class="btn btn-sm btn-outline-primary w-50" onclick="fillCredentials('admin', 'admin123')">
+                            <i class="bi bi-shield-lock me-1"></i> Admin
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-success w-50" onclick="fillCredentials('staff', 'staff123')">
+                            <i class="bi bi-person-badge me-1"></i> Staff
+                        </button>
+                    </div>
+                    <div class="text-center text-muted" style="font-size: 0.78rem;">
+                        <strong>Admin:</strong> <code>admin</code> / <code>admin123</code><br>
+                        <strong>Staff:</strong> <code>staff</code> / <code>staff123</code>
+                    </div>
                 </div>
             </div>
         </div>

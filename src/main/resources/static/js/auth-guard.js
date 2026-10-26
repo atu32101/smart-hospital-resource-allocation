@@ -20,12 +20,19 @@
     document.addEventListener('DOMContentLoaded', () => {
         if (!isLoginPage) {
             const userNameDisplay = document.getElementById('loggedInUserName');
-            if (userNameDisplay && currentUser) {
+            const userRoleDisplay = document.getElementById('loggedInUserRole');
+            if (currentUser) {
                 try {
                     const parsed = JSON.parse(currentUser);
-                    userNameDisplay.textContent = parsed.username || 'Admin';
+                    if (userNameDisplay) {
+                        const uname = parsed.username || 'User';
+                        userNameDisplay.textContent = uname.charAt(0).toUpperCase() + uname.slice(1);
+                    }
+                    if (userRoleDisplay) {
+                        userRoleDisplay.textContent = (parsed.role === 'ROLE_STAFF') ? 'Hospital Staff' : 'Administrator';
+                    }
                 } catch (e) {
-                    userNameDisplay.textContent = currentUser;
+                    if (userNameDisplay) userNameDisplay.textContent = currentUser;
                 }
             }
 

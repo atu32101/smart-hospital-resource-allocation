@@ -41,6 +41,11 @@ public class DataInitializer implements CommandLineRunner {
             userRepository.save(admin);
             System.out.println(">>> Seeded default admin user (admin / admin123)");
         }
+        if (!userRepository.existsByUsername("staff")) {
+            User staff = new User("staff", "staff123", "ROLE_STAFF");
+            userRepository.save(staff);
+            System.out.println(">>> Seeded default staff user (staff / staff123)");
+        }
     }
 
     private void seedBeds() {
