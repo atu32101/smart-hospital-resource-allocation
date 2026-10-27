@@ -1,4 +1,4 @@
-# Smart Hospital Resource Allocation System
+#Hospital Resource Allocation System
 **College Minor Project (Java Spring Boot & Web Technologies)**
 
 ---
