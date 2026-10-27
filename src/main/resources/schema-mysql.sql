@@ -48,3 +48,15 @@ CREATE TABLE IF NOT EXISTS allocations (
     CONSTRAINT fk_alloc_patient FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE,
     CONSTRAINT fk_alloc_bed FOREIGN KEY (bed_id) REFERENCES beds(id) ON DELETE CASCADE
 );
+
+-- 5. Equipments Table
+CREATE TABLE IF NOT EXISTS equipments (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    type VARCHAR(30) NOT NULL, -- VENTILATOR, OXYGEN, MONITOR, PUMP
+    location_or_room VARCHAR(50),
+    status VARCHAR(20) NOT NULL DEFAULT 'AVAILABLE', -- AVAILABLE, ALLOCATED
+    patient_id BIGINT NULL,
+    allocation_date TIMESTAMP NULL,
+    CONSTRAINT fk_equip_patient FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE SET NULL
+);

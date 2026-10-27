@@ -20,6 +20,10 @@ async function loadDashboardStats() {
         document.getElementById('statAvailableBeds').textContent = data.availableBeds;
         document.getElementById('statOccupiedBeds').textContent = data.occupiedBeds;
         document.getElementById('statWaitingPatients').textContent = data.waitingPatients;
+        const equipEl = document.getElementById('statAvailableEquipment');
+        if (equipEl) {
+            equipEl.textContent = (data.availableEquipment != null ? data.availableEquipment : 0) + ' Avail';
+        }
 
         // Render charts
         renderBedChart(data);

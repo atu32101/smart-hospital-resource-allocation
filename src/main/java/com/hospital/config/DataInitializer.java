@@ -1,9 +1,11 @@
 package com.hospital.config;
 
 import com.hospital.entity.Bed;
+import com.hospital.entity.Equipment;
 import com.hospital.entity.Patient;
 import com.hospital.entity.User;
 import com.hospital.repository.BedRepository;
+import com.hospital.repository.EquipmentRepository;
 import com.hospital.repository.PatientRepository;
 import com.hospital.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,14 +20,17 @@ public class DataInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final BedRepository bedRepository;
     private final PatientRepository patientRepository;
+    private final EquipmentRepository equipmentRepository;
 
     @Autowired
     public DataInitializer(UserRepository userRepository,
                            BedRepository bedRepository,
-                           PatientRepository patientRepository) {
+                           PatientRepository patientRepository,
+                           EquipmentRepository equipmentRepository) {
         this.userRepository = userRepository;
         this.bedRepository = bedRepository;
         this.patientRepository = patientRepository;
+        this.equipmentRepository = equipmentRepository;
     }
 
     @Override
@@ -33,6 +38,7 @@ public class DataInitializer implements CommandLineRunner {
         seedUsers();
         seedBeds();
         seedPatients();
+        seedEquipment();
     }
 
     private void seedUsers() {
@@ -83,6 +89,25 @@ public class DataInitializer implements CommandLineRunner {
 
             patientRepository.saveAll(samplePatients);
             System.out.println(">>> Seeded 10 sample waiting patients across priority tiers");
+        }
+    }
+
+    private void seedEquipment() {
+        if (equipmentRepository.count() == 0) {
+            List<Equipment> sampleEquipment = List.of(
+                    new Equipment("Ventilator VENT-01", "VENTILATOR", "ICU Bay Floor 3"),
+                    new Equipment("Ventilator VENT-02", "VENTILATOR", "Emergency Bay Floor 1"),
+                    new Equipment("Ventilator VENT-03", "VENTILATOR", "ICU Bay Floor 3"),
+                    new Equipment("Oxygen Concentrator OXY-01", "OXYGEN", "Ward 1 Floor 1"),
+                    new Equipment("Oxygen Concentrator OXY-02", "OXYGEN", "Ward 2 Floor 2"),
+                    new Equipment("Oxygen Concentrator OXY-03", "OXYGEN", "Floor 1 Storage"),
+                    new Equipment("Cardiac Monitor MON-01", "MONITOR", "Floor 2 Nursing Station"),
+                    new Equipment("Cardiac Monitor MON-02", "MONITOR", "Floor 3 Nursing Station"),
+                    new Equipment("Infusion Pump PUMP-01", "PUMP", "Floor 1 Dispensary"),
+                    new Equipment("Infusion Pump PUMP-02", "PUMP", "Floor 2 Dispensary")
+            );
+            equipmentRepository.saveAll(sampleEquipment);
+            System.out.println(">>> Seeded 10 hospital equipment items (Ventilators, Oxygen, Monitors, Pumps)");
         }
     }
 }

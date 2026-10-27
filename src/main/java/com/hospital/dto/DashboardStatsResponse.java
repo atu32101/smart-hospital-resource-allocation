@@ -10,6 +10,11 @@ public class DashboardStatsResponse {
     private long availableBeds;
     private long occupiedBeds;
 
+    // Equipment breakdown
+    private long totalEquipment;
+    private long availableEquipment;
+    private long allocatedEquipment;
+
     // Bed breakdown
     private long generalAvailable;
     private long generalOccupied;
@@ -81,6 +86,30 @@ public class DashboardStatsResponse {
 
     public void setOccupiedBeds(long occupiedBeds) {
         this.occupiedBeds = occupiedBeds;
+    }
+
+    public long getTotalEquipment() {
+        return totalEquipment;
+    }
+
+    public void setTotalEquipment(long totalEquipment) {
+        this.totalEquipment = totalEquipment;
+    }
+
+    public long getAvailableEquipment() {
+        return availableEquipment;
+    }
+
+    public void setAvailableEquipment(long availableEquipment) {
+        this.availableEquipment = availableEquipment;
+    }
+
+    public long getAllocatedEquipment() {
+        return allocatedEquipment;
+    }
+
+    public void setAllocatedEquipment(long allocatedEquipment) {
+        this.allocatedEquipment = allocatedEquipment;
     }
 
     public long getGeneralAvailable() {

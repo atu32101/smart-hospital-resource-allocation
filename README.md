@@ -61,23 +61,23 @@ Healthcare facilities operate with finite, high-cost resources—especially Inte
   │ HTML5, CSS3, JavaScript (Fetch API), Bootstrap 5, Chart.js
   ▼
 [ REST API Layer ]
-  │ AuthController, PatientController, BedController, AllocationController, DashboardController
+  │ AuthController, PatientController, BedController, AllocationController, EquipmentController, DashboardController
   ▼
 [ Service Layer (Business Logic) ]
-  │ AuthService, PatientService, BedService, AllocationService, DashboardService
+  │ AuthService, PatientService, BedService, AllocationService, EquipmentService, DashboardService
   ▼
 [ Data Access Layer (Spring Data JPA / Hibernate) ]
-  │ UserRepository, PatientRepository, BedRepository, AllocationRepository
+  │ UserRepository, PatientRepository, BedRepository, AllocationRepository, EquipmentRepository
   ▼
 [ Database Layer ]
-  │ MySQL / H2 Relational Database (Tables: users, patients, beds, allocations)
+  │ MySQL / H2 Relational Database (Tables: users, patients, beds, allocations, equipments)
 ```
 
 ---
 
 ## 7. Database Tables
 
-The system adheres strictly to four relational tables:
+The system adheres strictly to five relational tables:
 
 ### 1. `users`
 | Column | Type | Constraints | Description |
@@ -121,13 +121,25 @@ The system adheres strictly to four relational tables:
 | `priority` | VARCHAR(20) | NOT NULL | Patient priority tier at admission |
 | `status` | VARCHAR(20) | NOT NULL | `ACTIVE` (admitted) or `COMPLETED` (discharged) |
 
+### 5. `equipments`
+| Column | Type | Constraints | Description |
+|---|---|---|---|
+| `id` | BIGINT | PRIMARY KEY, AUTO_INCREMENT | Unique equipment ID |
+| `name` | VARCHAR(100) | NOT NULL | Equipment device name & code |
+| `type` | VARCHAR(50) | NOT NULL | `VENTILATOR`, `OXYGEN_CONCENTRATOR`, `PATIENT_MONITOR`, `INFUSION_PUMP` |
+| `location_or_room`| VARCHAR(100) | NOT NULL | Current storage or ward location |
+| `status` | VARCHAR(20) | NOT NULL | `AVAILABLE`, `ALLOCATED` |
+| `patient_id` | BIGINT | FOREIGN KEY &rarr; `patients(id)`, NULLABLE | Assigned admitted patient |
+| `allocation_date`| TIMESTAMP | NULLABLE | Timestamp of allocation |
+
 ---
 
 ## 8. ER Diagram Description
 - **`patients` to `beds` (1:1 Active Relationship):** One admitted patient occupies at most one bed; each occupied bed points to one patient.
+- **`patients` to `equipments` (1:N Relationship):** An admitted patient can have multiple medical devices allocated (e.g. Ventilator and Infusion Pump). When a patient is discharged, all allocated equipment items are automatically released and returned to `AVAILABLE` status.
 - **`patients` to `allocations` (1:N Relationship):** Over time, a patient can have allocation records documenting their admission history.
 - **`beds` to `allocations` (1:N Relationship):** A bed can have multiple historical allocations across different patient hospitalizations.
-- **`users`:** Manages administrator authentication credentials independently of medical records.
+- **`users`:** Manages administrator and staff authentication credentials independently of medical records.
 
 ---
 
@@ -241,15 +253,51 @@ Upon startup, `DataInitializer` automatically inserts sample demonstration recor
   - `Neha Verma` (Low, requires General)
   - `Suresh Nair` (Low, requires Private)
   - `Pooja Mehta` (Low, requires General)
+- **10 Medical Equipment Devices:**
+  - 3 Ventilators (`VENT-01`, `VENT-02`, `VENT-03`)
+  - 3 Oxygen Concentrators (`OXY-01`, `OXY-02`, `OXY-03`)
+  - 2 Patient Monitors (`MON-01`, `MON-02`)
+  - 2 Infusion Pumps (`PUMP-01`, `PUMP-02`)
 
 ---
 
-## 13. Demonstration Flow for Evaluation
+## 13. REST API Reference
+
+| Module | Method | Endpoint | Description |
+|---|---|---|---|
+| **Auth** | `POST` | `/api/auth/login` | Authenticate user (admin/staff) |
+| **Auth** | `GET` | `/api/auth/me` | Fetch active session |
+| **Dashboard** | `GET` | `/api/dashboard` | Get real-time stats for patients, beds, and equipment |
+| **Patients** | `GET` | `/api/patients` | List all patients |
+| **Patients** | `GET` | `/api/patients/waiting` | List patients waiting for beds (sorted by urgency) |
+| **Patients** | `GET` | `/api/patients/admitted` | List currently admitted patients |
+| **Patients** | `POST` | `/api/patients` | Register new patient with triage priority |
+| **Patients** | `PUT` | `/api/patients/{id}` | Update patient details |
+| **Patients** | `DELETE` | `/api/patients/{id}` | Delete patient |
+| **Beds** | `GET` | `/api/beds` | List all beds with occupancy and occupant details |
+| **Beds** | `GET` | `/api/beds/available` | List available beds |
+| **Beds** | `POST` | `/api/beds` | Register new bed |
+| **Beds** | `PUT` | `/api/beds/{id}` | Update bed |
+| **Beds** | `DELETE` | `/api/beds/{id}` | Delete bed (protected against occupied beds) |
+| **Allocation** | `GET` | `/api/allocation/recommend/{patientId}` | Algorithmic triage recommendation with reasons |
+| **Allocation** | `POST` | `/api/allocation/accept` | Accept bed allocation for patient |
+| **Allocation** | `GET` | `/api/allocation/history` | List all historical allocation records |
+| **Allocation** | `POST` | `/api/allocation/discharge/{patientId}` | Discharge patient, free bed, and auto-release equipment |
+| **Equipment** | `GET` | `/api/equipment` | List all equipment with status & assigned patients |
+| **Equipment** | `GET` | `/api/equipment/available` | List only available devices |
+| **Equipment** | `POST` | `/api/equipment` | Add new equipment item |
+| **Equipment** | `POST` | `/api/equipment/allocate` | Allocate device to an admitted patient |
+| **Equipment** | `POST` | `/api/equipment/release/{id}` | Release device back to available pool |
+| **Equipment** | `DELETE` | `/api/equipment/{id}` | Delete equipment item |
+
+---
+
+## 14. Demonstration Flow for Evaluation
 
 ```text
-1. Login (admin / admin123)
+1. Login (Staff: staff / staff123  OR  Admin: admin / admin123)
       ↓
-2. Dashboard (View patient & bed statistics and Chart.js graphs)
+2. Dashboard (View patient, bed, and equipment statistics + Chart.js graphs)
       ↓
 3. Patient Management (Add a new patient or view existing priority list)
       ↓
@@ -259,14 +307,16 @@ Upon startup, `DataInitializer` automatically inserts sample demonstration recor
       ↓
 6. Accept Allocation (Patient becomes Admitted, Bed becomes Occupied)
       ↓
-7. Allocation History (View active stay record)
+7. Equipment Allocation (Allocate Ventilator / Oxygen Concentrator to patient)
       ↓
-8. Discharge Patient (Bed becomes Available again for the next patient)
+8. Allocation History (View active stay and assigned resources)
+      ↓
+9. Discharge Patient (Bed & Equipment automatically freed and returned to Available)
 ```
 
 ---
 
-## 14. Future Scope
+## 15. Future Scope
 - **SMS/Email Notifications:** Alert patient family members upon bed allocation and room assignment.
 - **Multi-Ward Specialty Types:** Expand bed categories to include Pediatric, Orthopedic, and Isolation/Burn units.
 - **Predictive Length-of-Stay:** Estimate discharge dates based on diagnostic trends to forecast bed turnover.

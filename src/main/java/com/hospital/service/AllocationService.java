@@ -21,14 +21,17 @@ public class AllocationService {
     private final PatientRepository patientRepository;
     private final BedRepository bedRepository;
     private final AllocationRepository allocationRepository;
+    private final EquipmentService equipmentService;
 
     @Autowired
     public AllocationService(PatientRepository patientRepository,
                              BedRepository bedRepository,
-                             AllocationRepository allocationRepository) {
+                             AllocationRepository allocationRepository,
+                             EquipmentService equipmentService) {
         this.patientRepository = patientRepository;
         this.bedRepository = bedRepository;
         this.allocationRepository = allocationRepository;
+        this.equipmentService = equipmentService;
     }
 
     public List<Allocation> getAllAllocations() {
@@ -137,11 +140,12 @@ public class AllocationService {
             bedRepository.save(bed);
         }
 
-        // 2. Mark Patient Discharged
+        // 2. Mark Patient Discharged and auto-release any allocated equipment
         Patient patient = allocation.getPatient();
         if (patient != null) {
             patient.setStatus("DISCHARGED");
             patientRepository.save(patient);
+            equipmentService.releaseAllForPatient(patient.getId());
         }
 
         // 3. Complete Allocation
