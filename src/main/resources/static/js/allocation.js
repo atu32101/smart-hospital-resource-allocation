@@ -126,8 +126,37 @@ function displayRecommendation(data) {
         reasonsList.appendChild(li);
     });
 
+    // Load available equipment choices
+    loadAvailableEquipmentForAllocation();
+
     document.getElementById('recommendationCard').classList.remove('d-none');
     document.getElementById('recommendationCard').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function loadAvailableEquipmentForAllocation() {
+    const container = document.getElementById('equipmentCheckboxes');
+    if (!container) return;
+    try {
+        const res = await fetch('/api/equipment/available');
+        const items = await res.json();
+        if (!items || items.length === 0) {
+            container.innerHTML = `<div class="col-12 text-muted small"><i class="bi bi-info-circle me-1"></i>No equipment currently available in storage.</div>`;
+            return;
+        }
+        container.innerHTML = items.map(eq => `
+            <div class="col-md-6">
+                <div class="form-check p-2 bg-white rounded border d-flex align-items-center">
+                    <input class="form-check-input ms-0 me-2" type="checkbox" value="${eq.id}" id="eqCheck_${eq.id}">
+                    <label class="form-check-label w-100" for="eqCheck_${eq.id}" style="cursor: pointer;">
+                        <span class="fw-semibold text-dark">${escapeHtml(eq.name)}</span>
+                        <small class="text-muted d-block" style="font-size: 0.75rem;">${escapeHtml(eq.locationOrRoom || 'Storage')} &bull; ${escapeHtml(eq.type)}</small>
+                    </label>
+                </div>
+            </div>
+        `).join('');
+    } catch (e) {
+        container.innerHTML = `<div class="col-12 text-muted small">Could not load equipment.</div>`;
+    }
 }
 
 function displayNoBed(data) {
@@ -161,6 +190,10 @@ async function acceptAllocation() {
     const patientName = currentRecommendation.patient.name;
     const bedNumber = currentRecommendation.recommendedBed.bedNumber;
 
+    // Collect selected equipment IDs
+    const checkedBoxes = document.querySelectorAll('#equipmentCheckboxes input[type="checkbox"]:checked');
+    const equipmentIds = Array.from(checkedBoxes).map(cb => parseInt(cb.value)).filter(id => !isNaN(id));
+
     const acceptBtn = document.getElementById('acceptBtn');
     const origText = acceptBtn.innerHTML;
     acceptBtn.disabled = true;
@@ -170,12 +203,12 @@ async function acceptAllocation() {
         const response = await fetch('/api/allocation/accept', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ patientId, bedId })
+            body: JSON.stringify({ patientId, bedId, equipmentIds })
         });
 
         const data = await response.json();
         if (response.ok && data.success) {
-            showAlert('success', `Bed ${bedNumber} successfully allocated to ${patientName}! Patient is now Admitted.`);
+            showAlert('success', data.message || `Bed ${bedNumber} successfully allocated to ${patientName}! Patient is now Admitted.`);
             hideRecommendation();
             loadWaitingPatients();
         } else {

@@ -1,5 +1,6 @@
 // Allocation History and Discharge Management
 let historyList = [];
+let equipmentMap = {}; // patientId -> array of equipment names
 
 document.addEventListener('DOMContentLoaded', () => {
     loadAllocations();
@@ -10,8 +11,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadAllocations() {
     try {
-        const response = await fetch('/api/allocations');
-        historyList = await response.json();
+        const [allocRes, eqRes] = await Promise.all([
+            fetch('/api/allocations'),
+            fetch('/api/equipment')
+        ]);
+        historyList = await allocRes.json();
+        
+        equipmentMap = {};
+        if (eqRes.ok) {
+            const equipments = await eqRes.json();
+            equipments.forEach(eq => {
+                if (eq.patient && eq.patient.id) {
+                    if (!equipmentMap[eq.patient.id]) {
+                        equipmentMap[eq.patient.id] = [];
+                    }
+                    equipmentMap[eq.patient.id].push(eq.name);
+                }
+            });
+        }
+
         renderHistoryTable(historyList);
     } catch (err) {
         console.error('Error fetching history:', err);
@@ -24,7 +42,7 @@ function renderHistoryTable(list) {
     tbody.innerHTML = '';
 
     if (!list || list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-muted">No allocation records found.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-muted">No allocation records found.</td></tr>`;
         return;
     }
 
@@ -40,6 +58,14 @@ function renderHistoryTable(list) {
             <span class="badge bg-light text-muted border">Completed</span>
         `;
 
+        const patientId = a.patient ? a.patient.id : null;
+        let equipmentBadges = '<span class="text-muted small">None</span>';
+        if (isActive && patientId && equipmentMap[patientId] && equipmentMap[patientId].length > 0) {
+            equipmentBadges = equipmentMap[patientId].map(name => 
+                `<span class="badge bg-info text-dark me-1 mb-1"><i class="bi bi-tools me-1"></i>${escapeHtml(name)}</span>`
+            ).join('');
+        }
+
         tr.innerHTML = `
             <td class="fw-bold">#${a.id}</td>
             <td>
@@ -49,6 +75,7 @@ function renderHistoryTable(list) {
             <td><span class="bed-tag">${escapeHtml(a.bed ? a.bed.bedNumber : '-')}</span></td>
             <td>${getBedTypeBadge(a.bed ? a.bed.bedType : '-')}</td>
             <td>${getPriorityBadge(a.priority)}</td>
+            <td>${equipmentBadges}</td>
             <td><small class="text-muted">${formatDate(a.allocationDate)}</small></td>
             <td>${getAllocationStatusBadge(a.status)}</td>
             <td class="text-end">${actionBtn}</td>

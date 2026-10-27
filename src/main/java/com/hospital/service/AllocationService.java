@@ -89,6 +89,11 @@ public class AllocationService {
 
     @Transactional
     public Allocation acceptAllocation(Long patientId, Long bedId) {
+        return acceptAllocation(patientId, bedId, null);
+    }
+
+    @Transactional
+    public Allocation acceptAllocation(Long patientId, Long bedId, List<Long> equipmentIds) {
         Patient patient = patientRepository.findById(patientId)
                 .orElseThrow(() -> new IllegalArgumentException("Patient not found with ID: " + patientId));
 
@@ -112,7 +117,20 @@ public class AllocationService {
         patient.setStatus("ADMITTED");
         patientRepository.save(patient);
 
-        // 3. Create Allocation Record
+        // 3. Allocate selected equipment if requested
+        if (equipmentIds != null && !equipmentIds.isEmpty()) {
+            for (Long eqId : equipmentIds) {
+                if (eqId != null) {
+                    try {
+                        equipmentService.allocateEquipment(eqId, patient.getId());
+                    } catch (Exception ignored) {
+                        // Log and continue if a specific equipment is unavailable
+                    }
+                }
+            }
+        }
+
+        // 4. Create Allocation Record
         Allocation allocation = new Allocation();
         allocation.setPatient(patient);
         allocation.setBed(bed);

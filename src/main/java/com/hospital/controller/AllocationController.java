@@ -44,8 +44,10 @@ public class AllocationController {
     @PostMapping("/api/allocation/accept")
     public ResponseEntity<ApiResponse<Allocation>> acceptAllocation(@Valid @RequestBody AllocationRequest request) {
         try {
-            Allocation allocation = allocationService.acceptAllocation(request.getPatientId(), request.getBedId());
-            String msg = "Bed " + allocation.getBed().getBedNumber() + " successfully allocated to " + allocation.getPatient().getName() + ".";
+            Allocation allocation = allocationService.acceptAllocation(request.getPatientId(), request.getBedId(), request.getEquipmentIds());
+            int equipCount = request.getEquipmentIds() != null ? request.getEquipmentIds().size() : 0;
+            String msg = "Bed " + allocation.getBed().getBedNumber() + " successfully allocated to " + allocation.getPatient().getName() +
+                    (equipCount > 0 ? " along with " + equipCount + " medical equipment device(s)." : ".");
             return ResponseEntity.ok(ApiResponse.ok(msg, allocation));
         } catch (IllegalArgumentException | IllegalStateException e) {
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));

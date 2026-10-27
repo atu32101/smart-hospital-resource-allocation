@@ -201,18 +201,56 @@
                 </div>
             </div>
 
+            <!-- Hospital Equipment Live Inventory & Quick Allocation Card -->
+            <div class="card custom-card mb-4">
+                <div class="card-header-clean d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-tools text-primary fs-5"></i>
+                        <span class="fw-bold">Hospital Equipment Live Inventory & Quick Allocation</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <button class="btn btn-sm btn-outline-primary" onclick="openDashboardAddEquipmentModal()">
+                            <i class="bi bi-plus-circle me-1"></i> Add Equipment
+                        </button>
+                        <a href="equipment.html" class="btn btn-sm btn-light border">
+                            <i class="bi bi-arrows-fullscreen me-1"></i> Full View
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Device Name</th>
+                                    <th>Type</th>
+                                    <th>Location / Ward</th>
+                                    <th>Status</th>
+                                    <th>Assigned Patient</th>
+                                    <th class="text-end">Quick Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashboardEquipmentTableBody">
+                                <!-- Populated dynamically by dashboard.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- Quick Access Banners -->
             <div class="card custom-card p-4 bg-white border">
                 <div class="row align-items-center">
                     <div class="col-md-8">
                         <h5 class="fw-bold text-dark mb-1">Smart Hospital Resource Optimization</h5>
                         <p class="text-muted mb-0 small">
-                            Automatically triage waiting patients by urgency level (Critical &gt; High &gt; Medium &gt; Low) and recommend available matching beds immediately.
+                            Automatically triage waiting patients by urgency level (Critical &gt; High &gt; Medium &gt; Low) and recommend available matching beds and medical equipment immediately.
                         </p>
                     </div>
                     <div class="col-md-4 text-md-end mt-3 mt-md-0">
                         <a href="allocation.html" class="btn btn-primary me-2">
-                            <i class="bi bi-cpu me-1"></i> Start Allocation
+                            <i class="bi bi-cpu me-1"></i> Smart Allocate
                         </a>
                         <a href="patients.html" class="btn btn-outline-secondary">
                             <i class="bi bi-person-plus me-1"></i> Add Patient
@@ -221,6 +259,83 @@
                 </div>
             </div>
         </main>
+    </div>
+</div>
+
+<!-- Modal: Allocate Equipment to Admitted Patient -->
+<div class="modal fade" id="dashAllocateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold" id="dashAllocateModalTitle">
+                    <i class="bi bi-tools text-primary me-2"></i>Allocate Equipment to Patient
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="dashAllocateEquipId">
+                <div class="mb-3 p-3 bg-light rounded border">
+                    <div class="text-muted small text-uppercase fw-bold">Selected Device</div>
+                    <h5 class="fw-bold text-dark mb-1" id="dashAllocateEquipName">Ventilator VENT-01</h5>
+                    <div class="small text-secondary" id="dashAllocateEquipMeta">Type: Ventilator | Location: ICU Wing</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="dashPatientSelect" class="form-label small fw-bold text-muted">SELECT ADMITTED PATIENT</label>
+                    <select id="dashPatientSelect" class="form-select form-select-lg">
+                        <option value="">-- Choose Admitted Patient --</option>
+                    </select>
+                    <small class="text-muted">Only patients currently admitted with a bed are eligible for bedside equipment.</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary px-4" id="dashConfirmAllocateBtn" onclick="submitDashboardAllocate()">
+                    <i class="bi bi-check2-circle me-1"></i> Confirm Allocation
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Add New Equipment -->
+<div class="modal fade" id="dashAddEquipModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-plus-circle text-primary me-2"></i>Register New Hospital Equipment
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="dashAddEquipForm">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">EQUIPMENT / DEVICE NAME</label>
+                        <input type="text" id="dashEquipName" class="form-control" placeholder="e.g. Ventilator VENT-04" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">EQUIPMENT TYPE</label>
+                        <select id="dashEquipType" class="form-select" required>
+                            <option value="VENTILATOR">Ventilator</option>
+                            <option value="OXYGEN_CONCENTRATOR">Oxygen Concentrator</option>
+                            <option value="PATIENT_MONITOR">Patient Monitor</option>
+                            <option value="INFUSION_PUMP">Infusion Pump</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">LOCATION / WARD / ROOM</label>
+                        <input type="text" id="dashEquipLocation" class="form-control" placeholder="e.g. Floor 2 Private Recovery" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary px-4" onclick="submitDashboardAddEquipment()">
+                    <i class="bi bi-save me-1"></i> Save Equipment
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 

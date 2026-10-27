@@ -172,6 +172,19 @@
                             <!-- Populated by allocation.js -->
                         </ul>
 
+                        <!-- Optional Medical Equipment Selection -->
+                        <div class="p-3 bg-light rounded border mb-3">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <label class="form-label small fw-bold text-muted mb-0">
+                                    <i class="bi bi-tools text-primary me-1"></i> ASSIGN MEDICAL EQUIPMENT (OPTIONAL)
+                                </label>
+                                <small class="text-muted">Allocated alongside bed</small>
+                            </div>
+                            <div id="equipmentCheckboxes" class="row g-2">
+                                <div class="col-12 text-muted small"><span class="spinner-border spinner-border-sm me-1"></span>Loading available equipment...</div>
+                            </div>
+                        </div>
+
                         <div class="d-flex gap-2">
                             <button type="button" class="btn btn-success btn-lg px-4 shadow-sm" id="acceptBtn">
                                 <i class="bi bi-check2-circle me-1"></i> Accept Allocation
